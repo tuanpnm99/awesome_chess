@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/tuanpnm99/awesome_chess#readme",
   "dependencies": {
+    "body-parser": "1.18.3",
+    "chess.js": "0.10.2",
     "ejs": "2.6.1",
     "express": "4.16.4",
     "socket.io": "2.2.0"

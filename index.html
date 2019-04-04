@@ -76,6 +76,25 @@ var init = function() {
   };
 
   var onDrop = function(source, target) {
+    var data = {};
+		data.title = "title";
+		data.message = "message";
+
+		$.ajax({
+		    type: 'POST',
+			  data: data,
+				url: 'http://localhost:3000/endpoint',
+        dataType: "text",
+        success: function(data) {
+            console.log('success', data);
+                    // var ret = jQuery.parseJSON(data);
+                    // console.log(ret)
+        },
+        error: function(jqXHR, textStatus, err) {
+            //show error message
+            alert('text status '+textStatus+', err '+err)
+        }
+    });
     removeGreySquares();
     // see if the move is legal
     var move = game.move({
