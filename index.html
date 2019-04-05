@@ -13,7 +13,6 @@
 
   <div id="board" style="width: 400px"></div>
   <p>Status: <span id="status"></span></p>
-  <p>FEN: <span id="fen"></span></p>
   <p>PGN: <span id="pgn"></span></p>
 
 <script src="js/json3.min.js"></script>
@@ -26,7 +25,6 @@ var init = function() {
   var board,
     game = new Chess(),
     statusEl = $('#status'),
-    fenEl = $('#fen'),
     pgnEl = $('#pgn');
   var removeGreySquares = function() {
     $('#board .square-55d63').css('background', '');
@@ -76,25 +74,7 @@ var init = function() {
   };
 
   var onDrop = function(source, target) {
-    var data = {};
-		data.title = "title";
-		data.message = "message";
 
-		$.ajax({
-		    type: 'POST',
-			  data: data,
-				url: 'http://localhost:3000/endpoint',
-        dataType: "text",
-        success: function(data) {
-            console.log('success', data);
-                    // var ret = jQuery.parseJSON(data);
-                    // console.log(ret)
-        },
-        error: function(jqXHR, textStatus, err) {
-            //show error message
-            alert('text status '+textStatus+', err '+err)
-        }
-    });
     removeGreySquares();
     // see if the move is legal
     var move = game.move({
@@ -107,6 +87,25 @@ var init = function() {
     if (move === null) return 'snapback';
 
     updateStatus();
+    current_state = {state: game.fen()};
+    $.ajax({
+		    type: 'POST',
+			  data: current_state,
+				url: 'http://localhost:3000/endpoint',
+        dataType: "text",
+
+        success: function(data) {
+            parsed_data = JSON.parse(data)
+            game.move(parsed_data.next_move)
+            onSnapEnd();
+                    // var ret = jQuery.parseJSON(data);
+                    // console.log(ret)
+        },
+        error: function(jqXHR, textStatus, err) {
+            //show error message
+            alert('text status '+textStatus+', err '+err)
+        }
+    });
   };
 
   // update the board position after the piece snap
@@ -144,7 +143,6 @@ var init = function() {
     }
 
     statusEl.html(status);
-    fenEl.html(game.fen());
     pgnEl.html(game.pgn());
   };
 
