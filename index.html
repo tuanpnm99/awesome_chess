@@ -15,10 +15,11 @@
   <p>Status: <span id="status"></span></p>
   <p>PGN: <span id="pgn"></span></p>
 
-<script src="js/json3.min.js"></script>
-<script src="js/jquery-1.10.1.min.js"></script>
-<script src="js/chessboard.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.js"></script>
+  <script src="js/json3.min.js"></script>
+  <script src="js/jquery-1.10.1.min.js"></script>
+  <script src="js/chessboard.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.js"></script>
+
 
 <script>
 var init = function() {
@@ -88,16 +89,21 @@ var init = function() {
 
     updateStatus();
     current_state = {state: game.fen()};
+    computer_next_move(current_state)
+
+  };
+  computer_next_move = function(current_state){
     $.ajax({
 		    type: 'POST',
 			  data: current_state,
 				url: 'http://localhost:3000/endpoint',
         dataType: "text",
-
+        async: true,
         success: function(data) {
             parsed_data = JSON.parse(data)
             game.move(parsed_data.next_move)
             onSnapEnd();
+            
                     // var ret = jQuery.parseJSON(data);
                     // console.log(ret)
         },
@@ -106,8 +112,7 @@ var init = function() {
             alert('text status '+textStatus+', err '+err)
         }
     });
-  };
-
+  }
   // update the board position after the piece snap
   // for castling, en passant, pawn promotion
   var onSnapEnd = function() {

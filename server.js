@@ -9,7 +9,7 @@ server = express();
 server.use(myParser.urlencoded({extended : true}));
 
 var url = require('url');
-var evaluateBoard = function (board) {
+var evaluateBoard = function (board, enemy = 'w') {
     piece_value = {'p': 10, 'r': 50, 'n': 30, 'b': 30, 'q':90, 'k':900};
     var totalEvaluation = 0;
     for (var i = 0; i < 8; i++) {
@@ -17,35 +17,54 @@ var evaluateBoard = function (board) {
           value = 0
           if (board[i][j] != null){
             value = piece_value[board[i][j].type]
-            if(board[i][j].color = 'w'){
+            if(board[i][j].color == enemy){
               value = -value;
             }
           }
-          totalEvaluation = totalEvaluation + value;
+          totalEvaluation += value;
         }
     }
     return totalEvaluation;
 };
-function get_move(game){
+var minmax = function(game, depth, isMin){
+  if (depth == 0) return evaluateBoard(game.board());
   var possibleMoves = game.moves();
-  var bestMove = null;
-    //use any negative large number
-  var bestValue = -9999;
-
+  var best_score = -9999
+  if(isMin == true) best_score = 9999
   for (var i = 0; i < possibleMoves.length; i++) {
         var tmp_move = possibleMoves[i];
         game.move(tmp_move);
         //take the negative as AI plays as black
-        var boardValue = evaluateBoard(game.board())
+        tmp_score = minmax(game, depth-1, !isMin)
         game.undo();
-        if (boardValue > bestValue) {
-            bestValue = boardValue;
-            bestMove = tmp_move;
+        if(isMin == true){
+          best_score = Math.min(best_score, tmp_score);
+        }
+        else{
+          best_score = Math.max(best_score, tmp_score);
+        }
+  }
+  return best_score;
+}
+function get_move(game){
+
+  var possibleMoves = game.moves();
+  var best_move = null
+  var best_score = -9999
+  for (var i = 0; i < possibleMoves.length; i++) {
+        var tmp_move = possibleMoves[i];
+        game.move(tmp_move);
+        //take the negative as AI plays as black
+        tmp_move_score = minmax(game, 2, true);
+        game.undo();
+        if (best_score <= tmp_move_score){
+          best_move = tmp_move;
+          best_score = tmp_move_score;
         }
   }
   // game over
   if (possibleMoves.length === 0) return;
-  return bestMove
+  return best_move
 }
 server.post('/endpoint', function(req, res){
   game_state = Chess(req.body.state)
